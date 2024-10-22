@@ -9,7 +9,7 @@ import json
 import tinytuya
 import time
 import tuyactrl
-from matplotlib import colors
+from webcolors import name_to_rgb
 from joblib import Parallel, delayed
 
 
@@ -63,22 +63,19 @@ def rgbLight(name,r,g,b):
 
 @app.route('/light/all/rgb/<r>/<g>/<b>')
 def rgbAllLight(r,g,b):
-    outs = Parallel(n_jobs=-1)(delayed(rgbLight)(light,r,g,b) for light in lights)
+    outs = Parallel(n_jobs=5, backend="threading")(delayed(rgbLight)(light,r,g,b) for light in lights)
     return str(outs)
 
 @app.route('/light/<name>/color/<color>')
 def colorLight(name,color):
-    rgb = colors.to_rgb(color)
-    r= int(rgb[0] * 255)
-    g = int(rgb[1] * 255)
-    b = int(rgb[2] * 255)
+    r, g, b = name_to_rgb(color)
     tuyactrl.color_setting(name,100,r,g,b)
     tuyactrl.turn_on(name)
     return tuyactrl.status(name)
 
 @app.route('/light/all/color/<color>')
 def colorAllLight(color):
-    outs = Parallel(n_jobs=-1)(delayed(colorLight)(light,color) for light in lights)
+    outs = Parallel(n_jobs=5, backend="threading")(delayed(colorLight)(light,color) for light in lights)
     return str(outs)
 
 @app.route('/light/<name>')
@@ -89,15 +86,15 @@ def getLightState(name):
 def toggleAllLights(status):
     match status:
         case 'off':
-            Parallel(n_jobs=-1)(delayed(tuyactrl.turn_off)(light) for light in lights)
+            Parallel(n_jobs=5, backend="threading")(delayed(tuyactrl.turn_off)(light) for light in lights)
         case 'on':
-            Parallel(n_jobs=-1)(delayed(tuyactrl.turn_on)(light) for light in lights)
+            Parallel(n_jobs=5, backend="threading")(delayed(tuyactrl.turn_on)(light) for light in lights)
         case 'bright':
-            Parallel(n_jobs=-1)(delayed(tuyactrl.bright_white)(light) for light in lights)
-            Parallel(n_jobs=-1)(delayed(tuyactrl.turn_on)(light) for light in lights)
+            Parallel(n_jobs=5, backend="threading")(delayed(tuyactrl.bright_white)(light) for light in lights)
+            Parallel(n_jobs=5, backend="threading")(delayed(tuyactrl.turn_on)(light) for light in lights)
         case 'evening':
-            Parallel(n_jobs=-1)(delayed(tuyactrl.evening)(light) for light in lights)
-            Parallel(n_jobs=-1)(delayed(tuyactrl.turn_on)(light) for light in lights)
+            Parallel(n_jobs=5, backend="threading")(delayed(tuyactrl.evening)(light) for light in lights)
+            Parallel(n_jobs=5, backend="threading")(delayed(tuyactrl.turn_on)(light) for light in lights)
         case _:
             return 'Sorry Dave, afraid I can\'t do that'
     return "Done"

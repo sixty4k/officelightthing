@@ -10,3 +10,18 @@ function reboot() {
     console.log('Rebooting...');
     $.ajax({ type: 'GET', url: '/reboot' });
 }
+
+function statusLight(name) {
+    $.ajax({type: 'GET', url: '/light/' + name, data: "", datatype: 'json'})
+
+    var tag=document.getElementById(name);
+
+    if ( data['light_on'] == "true" ) {
+        tag.style.color="green";
+    } else {
+        tag.style.color="blue";
+    };
+
+    return data['light_on']
+}
+

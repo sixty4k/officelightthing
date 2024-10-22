@@ -8,18 +8,9 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-
+    <meta http-equiv="refresh" content="5" />
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js'></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
-    <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js" type="text/javascript" charset="utf-8"></script>
 
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel='stylesheet' href='static/css/main.css'>
@@ -35,12 +26,16 @@
                 <div class='col-sm'>
                         <div class='btn-group' role='group'>
                             <button class='btn btn-secondary'
-                                onclick='toggleAllLights("bright");'><h1>On</h1></button>
+                                onclick='toggleLight("bright", "all");'><h1>On</h1></button>
                             <button class='btn btn-secondary'
-                                onclick='toggleAllLights("evening");'><h1>Evening</h1></button>
+                                onclick='toggleLight("evening", "all");'><h1>Evening</h1></button>
                             <button class='btn btn-secondary'
-                                onclick='toggleAllLights("off");'><h1>Off</h1></button>
+                                onclick='toggleLight("off", "all");'><h1>Off</h1></button>
                         </div>
+                        <!-- <div class='btn-group mt-2' role='group'>
+                            <input type="color" id="colorAll" value="#00ff00">
+                        </div> -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -51,9 +46,10 @@
         {% for light in lights %}
             <div class='col-sm-4'>
                 <center>
-                <h2 class="mt-2">{{ light }}</h2>
+                <h2 class="mt-2" id="{{ light }}">{{ light }}</h2>
                 <p></p>
                 <div class='btn-group mt-2' role='group'>
+
                     <button class='btn btn-secondary'
                         onclick='toggleLight("on", "{{ light }}");'><h1>On</h1></button>
                     <button class='btn btn-secondary'
