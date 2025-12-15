@@ -1,20 +1,12 @@
-# PiSmartDisplay
+# Mike's simplified Office Lights Project
 
-A simple smart home and info display for the Raspberry Pi. Right now, you can:
-- Control Philips Hue lights
-- Control TP-Link plugs
-- View time, weather, and UV info
-- View top three news stories from a properly formatted news feed.
+The origins of this are Bryan Smith's (pismartdisplay)[https://github.com/bryan-ab-smith/pismartdisplay], I then tore a bunch of his good stuff out that I didn't need, and then janked it all up with bits and pieces of my own and a lot of copypasta'd example code, which I then bent and spindled in wierd ways until it ran.
 
-## Screenshot
-![](screenshot.png)
-
+A little API for controlling some tuya lights in my office and the most jenky little web page that works on an old iphone.
 
 ## Status
 
 This is a work in progress so expect things to potentially go wrong. However, code is only checked in when it is presumed to work.
-
-I'm not a professional coder so there is a lot to fix and improve. In that light, I know that things may be broken and/or poorly implemented. I'm happy to take suggestions though.
 
 ## Setup
 
@@ -22,66 +14,36 @@ Setup is annoying at this point. I'm hoping, in the future, to automate this wit
 
 ### Pi Setup
 
-The following is courtesy of and based on Die Antwort's ([source](https://die-antwort.eu/techblog/2017-12-setup-raspberry-pi-for-kiosk-mode/)) instructions. It's provided here for posterity.
+Just setup a basic headless Pi.  not gonna care too much here, also, who the heck else is likely to use this?  If you do, hopefully you know this bit.
 
-1. Start with a clean and updated copy of Raspbian Lite (nothing prevents the app working with any RPi Linux distro but this is written with Raspbian in mind).
+For reasons of necessity and also because I like to be difficult to myself, I wanted to use python 3.10.x, which wasn't available...
 
-2. In raspi-config, make sure:
+step in (sh-python-installer)[https://github.com/tvdsluijs/sh-python-installer]
 
-    a. Boot Options -> Desktop/CLI is set to "Console Autologin"
-    
-    b. Localisation Options -> Change Timezone -> set accordingly.
-    
-    c. Interfacing Options -> SSH -> enable SSH.
+Which I used to build python3.10
 
-3. Install the following to set up a minimum set of packages (X.org, xscreensaver and Openbox):
-
-    `sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit xscreensaver openbox`
-
-4. Install a web browser. You've got a few options (midori, firefox-esr, chromium-browser or vivaldi). All of these are available via apt except for Vivaldi which you will have to install by downloading it from their website. In my own testing, Chromium works well because you can scroll with one finger (one finger dragging in Firefox, for example, highlights text) and it has a simple kiosk mode. As such, the instructions below assume that you're using Chromium. Install it with:
-
-    `sudo apt-get install --no-install-recommends chromium-browser`
-
-5. Copy over the sample Openbox autostart config file:
-
-    `sudo cp sample_openbox_autostart /etc/xdg/openbox/autostart`
-
-6. Add the following to ~/.bash_profile to start X at boot:
-
-    `[[ -z $DISPLAY && $XDG_VTNR -eq 1 ]] && startx -- -nocursor`
-
-7. Create ~/.xscreensaver and add the following to it:
-
-        timeout: 2
-        mode: blank
-
-    Change the timeout to however long you want the screen to stay on before the blank screensaver kicks in.
-
-Nothing will work quite yet; restarting the Pi will result in the smart display opening up a blank Chromium window, in kiosk mode, that loads a failed page. Follow the next set of instructions to get the app up and running.
-
-It's best, I would suggest, to restart the Pi at this point to make sure that you've got the "foundation" up and running. In other words, check to make sure that a reboot results in a fullscreen (kiosk mode) Chromium window opening to a broken/not found page.
-
-### PiSmartDisplay Setup
+### Office Light Setup
 
 1. Clone code:
 
-    `git clone https://github.com/bryan-ab-smith/pismartdisplay.git`
+    `git clone git@github.com:sixty4k/officelightthing.git`
 
 2. Edit smartdisplay.service and change:
 
-    a. User to the user that you have starting and autolgging in at boot.
+    a. User to the user that you have starting and autolgging in at boot. (root)
 
     b. WorkingDirectory to the directory where the smart display code is stored.
 
-3. Install the Python modules required:
+3. Setup a virtual environment & start it
 
-    `pip3 install flask phue pyhs100 psutil`
+    ```
+    /usr/bin/python3.10  -m venv .
+    . venv/bin/activate
+    ```
 
-4. Move static/config.json.template to static/config.json:
+4. Install the Python modules required:
 
-    `mv static/config.json.template static/config.json`
-
-    See Config section below to edit the files.
+    `pip install -r requirements.txt`
 
 5. Copy smart display service to /etc/systemd/system/ and enable the service:
 
@@ -89,55 +51,17 @@ It's best, I would suggest, to restart the Pi at this point to make sure that yo
     
     `sudo systemctl enable smartdisplay`
 
-6. If you want to test things at this point, go to _http://HOSTNAME.local_ from a different device (where HOSTNAME is the hostname of your smart display). If that works, you should be good to go.
-
-7. Reboot the Pi:
-
-    `subo reboot`
-
-8. Profit!
-
-
 ## Config
 
-### static/config.json
-This configuration file allows you to set up some custom settings to set the smart display up for your needs. More configuration coming but what's below works as of now.
-
-| Key            | Value                      | Description/Note                                                                                                                     |
-| -------------- |:--------------------------:| ------------------------------------------------------------------------------------------------------------------------------------:|
-| owAPI_key      | API Key (string)           | This gives you access to OpenWeather data. See [here](https://openweathermap.org/appid) for information about getting the key.       |
-| ow_loc         | Location for weather data  | This should be in the format `city,country_code`. For example, `Toronto,CA`                                                          |
-| ow_units       | Units for the weather data | This should be either `metric` or `imperial`                                                                                         |
-| ouvAPI_key     | API Key (string)           | This gives you access to OpenUV data. See [here](https://www.openuv.io/) for more information about getting the key.                 |
-| lights_enabled     | `True` or `False`           | Enable or disable the light control (Philips Hue) functionality.      |
-| bridge_address     | IP Address of the Philips Hue Bridge           | The IP address of the Philips Hue bridge. If you don't know what this is, open up the Philips Hue app -> Settings -> Hue Bridges -> Info icon -> IP Address.      |
-| plugs_enabled     | `True` or `False`           | Enable or disable the plug control functionality.      |
-| news_feed     | URL to a news feed.           | The news feed to show in the news section. A few top stories feeds are provided in the comments for the config file (SBS (Australia), CBC (Canada), BBC (UK), CNN (USA)).      |
-| lat     | Latitude of your current location.           | ---      |
-| lng     | Longitude of your current location.           | ---      |
-| hereAPI_key     | Get the city that you're in (based on lat/lng).           | You need to get an API key from [here](https://developer.here.com/). This functionality is disabled because it's not all that helpful but here if you want it.      |
-
-NOTE: I'm not convinced that OpenWeather and OpenUV are super accurate (eg. ARPANSA data values in Australia are not the same as OpenUV data and the former is a more authoritative source). So, the data providers may change. In the meantime, this opens up the app to all people and provides, at the least, an approximate set of weather and UV data points.
-
-
-### Other Notes
-1. Restart only works if sudo is set to work as passwordless for the user running the app.
-2. When you add a new smart device to your network, you need to restart the app (devices are added to the app during execution).
-3. While this is designed to work on a Raspberry Pi with a small touchscreen, it's just a web app at heart so it will run anywhere Python is supported (ie. basically anywhere). So, you can run it on your local computer:
-
-    `python3 index.py`
-
-    Once that's running, navigate to _http://localhost:9000_.
-
-4. This is developed with the official RPi LCD screen used as the reference display. This means that the UI is designed to fit nicely into a 800x480 space. This is not to say that it won't work elsewhere but that small tweaks may be required of you if you use a very different resolution.
+TODO: the horrifying tuyactrl jiggery.
 
 
 ## License
-
   
 MIT License
 
 Copyright (c) 2019 Bryan Smith
+Copyright (c) 2020 Mike Robinson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
