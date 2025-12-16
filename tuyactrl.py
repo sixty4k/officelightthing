@@ -35,7 +35,6 @@ def bright_white(name):
 def evening(name):
     white_setting(name,90,0)
 
-
 def white_setting(name,bright,temp):
     # find the right item that matches name
     for item in data["devices"]:
@@ -52,7 +51,7 @@ def color_setting(name,bright,r,g,b):
     for item in data["devices"]:
         if item["name"] == name:
             break
-    print("\nSetting White: %s" % item["name"])
+    print("\nSetting Color: %s" % item["name"])
     d = tinytuya.BulbDevice(item["id"], item["ip"], item["key"])
     d.set_version(float(item["ver"]))
     d.set_brightness_percentage(brightness=bright)

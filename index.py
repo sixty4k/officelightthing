@@ -20,8 +20,9 @@ app = Flask(__name__)
 
 lights = []
 
-# This gets the Philips Hue light info.
-# For each of the ligths available via the bridge, add it to the list of lights available.
+# This gets the TUYA Lights info
+# For each of the ligths in the json file
+# add it to the list of lights available.
 for light in tuyasnap["devices"]:
     # Append the light to the list.
     lights.append(light["name"])
@@ -81,6 +82,12 @@ def colorAllLight(color):
 @app.route('/light/<name>')
 def getLightState(name):
     return tuyactrl.status(name)
+
+@app.route('/light/all')
+def getAllLightState():
+    outs = Parallel(n_jobs=-1)(delayed(tuyactrl.status)(light) for light in lights)
+    return return str(outs)
+
 
 @app.route('/light/all/<status>')
 def toggleAllLights(status):
